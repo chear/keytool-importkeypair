@@ -1,0 +1,133 @@
+apply plugin: 'com.android.application'
+gradle.startParameter.showStacktrace = org.gradle.api.logging.configuration.ShowStacktrace.ALWAYS
+
+//打包的输出路径
+ext.appReleaseDir = "E:\\GitProject\\com.zkar.pis.remotecontrol\\output_apk\\3288"
+
+// 加载版本信息配置文件方法
+def loadProperties() {
+    def proFile = file("./local.properties")
+    Properties pro = new Properties()
+    proFile.withInputStream { stream ->
+        pro.load(stream)
+    }
+    appReleaseDir = ext.appReleaseDir
+}
+//加载版本信息
+loadProperties()
+
+dependencies {
+    compile 'com.android.support:support-v4:19.0.0'
+    // this means compile with 'framework.jar' in this project ,but do not package with it into *.apk
+    provided files('libs//framework_recompile.jar')
+}
+
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.2'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        multiDexEnabled true
+    }
+//    dexOptions {
+//        jumboMode true
+//    }
+
+    signingConfigs {
+        release {
+            storeFile file("./output_apk/3288/sys_signed/remotecontrol.jks")
+            storePassword 'zkar123'
+            keyAlias 'remote'
+            keyPassword 'zkar123'
+        }
+
+        debug {
+//            storeFile file("..//signature/demo.jks")
+            storeFile file("output_apk/3288/sys_signed/remotecontrol.jks")
+            storePassword 'zkar123'
+            keyAlias 'remote'
+            keyPassword 'zkar132'
+        }
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            // 添加这一行 可以把so文件打包到apk中
+            jniLibs.srcDirs = ['libs']
+
+            java.srcDirs = ['src']
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+        }
+
+        // Move the tests to tests/java, tests/res, etc...
+        instrumentTest.setRoot('tests')
+
+        // Move the build types to build-types/<type>
+        // For instance, build-types/debug/java, build-types/debug/AndroidManifest.xml, ...
+        // This moves them out of them default location under src/<type>/... which would
+        // conflict with src/ being used by the main source set.
+        // Adding new build types or product flavors should be accompanied
+        // by a similar customization.
+        debug.setRoot('build-types/debug')
+        release.setRoot('build-types/release')
+    }
+    lintOptions {
+        abortOnError false
+    }
+    buildTypes {
+        release {
+            multiDexEnabled true
+            // 不显示Log
+//            buildConfigField "boolean", "LOG_DEBUG", "false"
+            //混淆
+//            minifyEnabled true
+            minifyEnabled false
+            //Zipalign优化
+            zipAlignEnabled true
+//            // 移除无用的resource文件
+            shrinkResources false
+            //前一部分代表系统默认的android程序的混淆文件，该文件已经包含了基本的混淆声明
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
+            //sign app
+            signingConfig signingConfigs.release
+        }
+        debug {
+            multiDexEnabled true
+            minifyEnabled false
+            zipAlignEnabled true
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
+            //sign app
+            signingConfig signingConfigs.debug
+        }
+    }
+    //编译完开始输入apk
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            //开始输出,自定义输出路径
+            output.outputFile =
+                    new File(appReleaseDir + "/com.zkar.pis.remotecontrol.apk")
+        }
+    }
+    productFlavors {
+    }
+
+
+}

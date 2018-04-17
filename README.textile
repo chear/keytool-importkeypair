@@ -30,3 +30,16 @@ keytool-importkeypair -k ~/.android/debug.keystore -p android -pk8 platform.pk8 
 h2. Feedback
 
 Shoot me an email at "getfatday@gmail.com":mailto:getfatday@gmail.com with any feedback.
+
+
+
+/******************************************************************************************************************************/
+
+For rk3288 to system signature :
+./keytool-importkeypair -k rk3288/remotecontrol.jks -p zkar123 -pk8 rk3288/platform.pk8 -cert rk3288/platform.x509.pem -alias remote
+
+└── rk3288
+    ├── build.gradle           (sample gradle script for Android Studio.)
+    ├── platform.pk8           (system  signature)
+    ├── platform.x509.pem
+    └── remotecontrol.jks      (generated certification from Android Studio)
